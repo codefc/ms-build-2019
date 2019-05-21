@@ -21,3 +21,6 @@ Repositório sobre o evento Microsoft Build 2019, localmente em Belo Horizonte e
 
 - **Aplicação Mobile** -  Aplicações mobile desenvolvida em Xamarin.Forms, para as plataformas Android e IOS, consumido as APIS disponíveis na aplicação .net core.
 
+# Arquitetura proposta
+
+![](assets/img/MSBuild2019.png)
