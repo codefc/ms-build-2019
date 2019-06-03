@@ -559,5 +559,5 @@ Seguido os passos acima, sua aplicação deverá ser como a seguinte imagem:
 # Rerências
 
 - [Xamarin Documentation](https://docs.microsoft.com/en-us/xamarin/)
-- [Lear Mobile - Microsoft] (https://dotnet.microsoft.com/learn/mobile)
+- [Lear Mobile - Microsoft](https://dotnet.microsoft.com/learn/mobile)
 - [Canal Xamarin Developrs](https://www.youtube.com/user/XamarinVideos)
