@@ -12,5 +12,7 @@ namespace Fumec.Mobile.Model
 
         [JsonProperty("url")]
         public string Url { get; set; }
+
+        public string Detail => $"{FullName} - {Url}";
     }
 }

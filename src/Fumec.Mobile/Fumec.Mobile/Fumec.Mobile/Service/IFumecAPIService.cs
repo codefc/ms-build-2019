@@ -7,7 +7,7 @@ namespace Fumec.Mobile.Service
 {
     public interface IFumecAPIService
     {
-        [Get("api/github")]
+        [Get("/api/github")]
         Task<List<Repository>> GetRepositories();
     }
 }

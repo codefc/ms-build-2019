@@ -37,6 +37,7 @@ namespace Fumec.Mobile.ViewModel
         {
             if (IsBusy) return;
 
+            IsBusy = true;
             try
             {
                 var repos = await _service.GetRepositories();

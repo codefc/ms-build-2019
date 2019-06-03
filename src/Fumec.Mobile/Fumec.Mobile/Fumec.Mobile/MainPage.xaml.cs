@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Fumec.Mobile.ViewModel;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -13,9 +14,24 @@ namespace Fumec.Mobile
     [DesignTimeVisible(false)]
     public partial class MainPage : ContentPage
     {
+        private MainPageViewModel _viewModel;
+
         public MainPage()
         {
             InitializeComponent();
+            _viewModel = new MainPageViewModel();
+
+            this.BindingContext = _viewModel;
+
+            
+        }
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+
+            await _viewModel.LoadAsync();
+
         }
     }
 }

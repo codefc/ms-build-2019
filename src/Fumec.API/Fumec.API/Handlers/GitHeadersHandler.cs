@@ -9,7 +9,7 @@ namespace Fumec.API.Handlers
         private const string HEADER_ACCEPT_NAME = "Accept";
         private const string HEADER_ACCEPT_VALUE = "application/vnd.github.v3+json";
         private const string HEADER_USER_AGENT_NAME = "User-Agent";
-        private const string HEADER_USER_AGENT_VALUE = "tanure";
+        private const string HEADER_USER_AGENT_VALUE = "NOME_DO_SEU_USUARIO_GIT";
 
         public GitHeadersHandler()
         {

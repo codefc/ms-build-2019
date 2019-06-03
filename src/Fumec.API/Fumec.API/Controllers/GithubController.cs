@@ -18,7 +18,7 @@ namespace Fumec.API.Controllers
         [HttpGet]
         public async Task<ActionResult<object>> Get()
         {
-            return await _service.GetRepositories("tanure");
+            return await _service.GetRepositories("SEU_USUARIO");
         }
     }
 }

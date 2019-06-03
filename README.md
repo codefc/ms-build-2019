@@ -335,13 +335,15 @@ namespace Fumec.Mobile.Model
 
         [JsonProperty("url")]
         public string Url { get; set; }
+
+        public string Detail => $"{FullName} - {Url}";
     }
 }
 
 
 ```
 
-Esta classe de modelo irá representar 1 objeto de repositório, apenas com alguns atributos. Observe a anotação a cada propriedade, **JsonProperty**. se faz necessário para que a desserialização de Json -> Object possa ser feita com os valores corretos nas respectivas propriedades.
+Esta classe de modelo irá representar 1 objeto de repositório, apenas com alguns atributos. Observe a anotação a cada propriedade, **JsonProperty**. se faz necessário para que a desserialização de Json -> Object possa ser feita com os valores corretos nas respectivas propriedades. A propriedade **Detail** é a junção das propriedades **FullName** e **Url**, para facilitar a exibição dos dois valores em um mesmo campo na listagem de repositórios.
 
 - Serivice/IFumecAPIService.cs
 
@@ -356,7 +358,7 @@ namespace Fumec.Mobile.Service
 {
     public interface IFumecAPIService
     {
-        [Get("api/github")]
+        [Get("/api/github")]
         Task<List<Repository>> GetRepositories();
     }
 }
@@ -409,6 +411,7 @@ namespace Fumec.Mobile.ViewModel
         {
             if (IsBusy) return;
 
+            IsBusy = true;
             try
             {
                 var repos = await _service.GetRepositories();
@@ -438,3 +441,123 @@ namespace Fumec.Mobile.ViewModel
 
 
 ```
+A classe acima será responsável pela interação com o serviço que obtém os repositórios do github e também terá a responsabilidade de disponiblizar os dados para a View ou tela de listagem dos repositórios.
+
+Perceba o sufixo **ViewModel** no nome da classe. É uma espécie de classe controladora. Está utilizando o padrão **MVVM** e, por isso, implementamos a interface **INotifyPropertyChanged**. Desta forma, caso ocorra qualquer alteração em alguma propriedade desta classe, a tela será notificada e, portanto, será atualizada. Observe a propriedade IsBusy. Ela será reponsável por informar à tela se existe alguma ação assíncrona que o usuário deverá aguarda. Neste contexto será exibido um ícone de "carregando" ao usuário.
+
+Para maiores detalhes sobre o padrão MVVM, consulte: [https://docs.microsoft.com/en-us/xamarin/xamarin-forms/enterprise-application-patterns/mvvm](https://docs.microsoft.com/en-us/xamarin/xamarin-forms/enterprise-application-patterns/mvvm);
+
+Outro detalhe é na seguinte linha:
+
+```csharp
+
+RestService.For<IFumecAPIService>("http://");
+
+```
+
+A string **http** deve ser alterada para o endereço de IP da sua máquina. Desta forma, antes de executar a aplicação mobile, execute a API, criada anteriormente, e esta será acessível atravbés do seu IP e porta. Por exemplo, executando a aplicação em sua máquina, o seguinte endereço poderá ser exibido: **http://localhost:5000**. Supondo que o IP da sua máquina na rede é **192.168.10.15**, o endereço a ser informado no código acima será: **http://192.168.10.15:5000**.
+
+> **Observação**: A necessidade acima, configuração com o IP da máquina será necessário caso você utilize o build diretamente em seu dispositivo. Se ao testar a aplicação for utilizado o emulador, o Ip utilizado será: **10.0.2.2**.
+
+> Para utilizar o debug em seu dispositivo Android, será necessário habilitar o modo desenvolvedor. Consulte a [referência](https://www.digitaltrends.com/mobile/how-to-get-developer-options-on-android/).
+
+- MainPage.xaml
+
+Será necessário alterar o layout da **MainPage** para conter uma listagem que exibirá todos os repositórios.
+
+``` xml
+
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="Fumec.Mobile.MainPage">
+
+    <StackLayout>
+        <ListView  IsRefreshing="{Binding IsBusy}" ItemsSource="{Binding Repositories}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextCell Text="{Binding Name}" Detail="{Binding Detail}">
+                    </TextCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </StackLayout>
+
+</ContentPage>
+
+
+```
+
+O Layout proposto é muito simples. Apenas foi utilizado um **StackLayout**, para organizar o conteúdo da tela, e dentro do StackLayout foi adicionado um controle chamado **ListView**.
+
+Alguns pontos importantes no arquivo acima. Observe que algumas propriedades possuem o código **{Bindind ...}**. Isso quer dizer que estamos "ligando" a propriedade em questão com alguma propriedade da ViewModel. Existem vários tipos de **Binding**. Para maiores detalhes, consultar a [documentação](https://docs.microsoft.com/en-us/xamarin/xamarin-forms/xaml/xaml-basics/data-binding-basics);
+
+Abaixo detalhes das propriedades:
+
+- **IsRefreshing** - é uma propriedade do ListView que é do tibpo bool(true ou false). É configurada para "escutar" a propriedade **IsBusy** da View Model. Desta forma, se esta propriedade estiver com o valor **true**, então um ícone de loading será exibido na tela.
+- **ItemsSrouce** - Esta propriedade está ligada com a propriedade **Repositories** da ViewModel. Com isso, se Repositories possuir valores, estes serão exibidos no ListView. A propriedade ItemsSource é aquela que alimenta ao ListView.
+
+- MainPage.xaml.cs
+
+Após a definição do layout, será necessário "ligar" a tela ao View Model. O código da classe **MainPage.xaml.cs será da seguinte forma:
+
+``` csharp
+using Fumec.Mobile.ViewModel;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Xamarin.Forms;
+
+namespace Fumec.Mobile
+{
+    // Learn more about making custom code visible in the Xamarin.Forms previewer
+    // by visiting https://aka.ms/xamarinforms-previewer
+    [DesignTimeVisible(false)]
+    public partial class MainPage : ContentPage
+    {
+        private MainPageViewModel _viewModel;
+
+        public MainPage()
+        {
+            InitializeComponent();
+            _viewModel = new MainPageViewModel();
+
+            this.BindingContext = _viewModel;
+
+            
+        }
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+
+            await _viewModel.LoadAsync();
+
+        }
+    }
+}
+
+
+```
+
+Foi criada uma propriedade denominada **_viewModel** que é do tipo **MainPageViewModel**. Esta necessidade será apenas para facilitar o uso da ViewModel no carregamento da tela.
+
+No Construtor da classe foi feita a instância da view model, **_viewModel = new MainPageViewModel();**, e em seguida associamos o contexto de **Bindind** da tela à ViewModel criada. Isso é feito atribuindo à propriedade **BindingContext** a respectiva View Model que irá fazer a ligação do que "vem do server" com a interação do usuário. Sem a atribuição da ViewModel ao contexto de binding, todas as configurações de ligação feitas no arquivo XAML não surtirão qualquer efeito.
+
+# Aplicação em execução
+
+Seguido os passos acima, sua aplicação deverá ser como a seguinte imagem:
+
+![](assets/img/app.jpg)
+
+# Rerências
+
+- [Xamarin Documentation](https://docs.microsoft.com/en-us/xamarin/)
+- [Lear Mobile - Microsoft] (https://dotnet.microsoft.com/learn/mobile)
+- [Canal Xamarin Developrs](https://www.youtube.com/user/XamarinVideos)
